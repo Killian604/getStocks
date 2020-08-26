@@ -1,0 +1,10 @@
+
+
+
+logs
+notebooks
+__pycache__
+.idea
+*.pyc
+.DS_Store
+.env
