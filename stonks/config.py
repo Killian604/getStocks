@@ -12,17 +12,22 @@ All values read from the config.ini file are string so type conversion must be m
 When sections not found: configparser.NoSectionError
 When keys not found: configparser.NoOptionError
 """
-is_debug_mode = False
 
 from ast import literal_eval  # For evaluating tuples,lists from config file
 from pathlib import Path
 import configparser
 import os
+import sqlalchemy
 import sqlite3
 import sys
 import time
 
 from stonks import logger_config
+
+is_debug_mode = False
+
+
+#######
 
 BASE_PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_PROJECT_PATH not in sys.path: sys.path.insert(0, BASE_PROJECT_PATH)
@@ -35,28 +40,14 @@ if BASE_PROJECT_PATH not in sys.path: sys.path.insert(0, BASE_PROJECT_PATH)
 config_file_name = 'config.ini'
 default_log_file_name = 'default.log'
 default_log_folder_path = Path(BASE_PROJECT_PATH, 'logs').absolute()
-valid_db_cxns = {'MYSQL', 'SQLITE'}
+valid_db_cxns = {'MYSQL', 'SQLITE', 'SQLITE3'}
 # Load up config file
 configuration = configparser.ConfigParser()
 configuration.read(os.path.join(BASE_PROJECT_PATH, config_file_name))
 
 FINNHUB_TOKEN = configuration.get('FINNHUB', 'TOKEN', raw=True)
 
-
 ########################################################################################################################
-
-# Instantiate DB cxn
-db_cxn_type = configuration.get('APP', 'DB_CONNECTION')
-sqlite_file_name = configuration.get('SQLITE', 'FILE_NAME')
-sqlite_save_path = configuration.get('SQLITE', 'LOCATION', fallback=None)
-if is_debug_mode:
-    print(f'sqlite_save_path = {sqlite_save_path}, type={type(sqlite_save_path)}')
-if not sqlite_save_path:
-    sqlite_save_path = BASE_PROJECT_PATH
-else:
-    if not os.path.isdir(sqlite_save_path):
-        raise ValueError(f'The following path is not valid: {sqlite_save_path}')
-cxn_string_sqlite3 = os.path.join(sqlite_save_path, sqlite_file_name)
 
 # Resolve logger variables
 config_file_log_folder_path = configuration.get('LOGGING', 'LOG_FILE_FOLDER_PATH')
@@ -73,6 +64,31 @@ logger = logger_config.create_generic_logger(
     file_log_level=configuration.get('LOGGING', 'FILE_LOG_LEVEL', fallback=None),
     file_log_file_path=log_file_complete_path,
 )
+
+
+########################################################################################################################
+
+# Instantiate DB cxn
+db_cxn_type = configuration.get('APP', 'DB_CONNECTION').upper()
+sqlite_file_name = configuration.get('SQLITE', 'FILE_NAME')
+sqlite_save_path = configuration.get('SQLITE', 'LOCATION', fallback=None)
+if is_debug_mode:
+    print(f'sqlite_save_path = {sqlite_save_path}, type={type(sqlite_save_path)}')
+if not sqlite_save_path:
+    sqlite_save_path = BASE_PROJECT_PATH
+else:
+    if not os.path.isdir(sqlite_save_path):
+        raise ValueError(f'The following path is not valid: {sqlite_save_path}')
+cxn_string_sqlite3 = os.path.join(sqlite_save_path, sqlite_file_name)
+
+if db_cxn_type == 'MYSQL':
+    # TODO
+    db_cxn = sqlalchemy.create_engine()
+    raise NotImplementedError(f'MYSQL cxn type not yet implemented')
+elif 'SQLITE' in db_cxn_type:
+    db_cxn = sqlite3.connect(cxn_string_sqlite3)
+else:
+    raise ValueError(f'Invalid database connection type specified. Value found: {db_cxn_type}')
 
 
 if __name__ == '__main__':
