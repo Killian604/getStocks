@@ -2,6 +2,7 @@
 from math import floor
 import datetime
 import time
+import warnings
 
 
 def convert_unix_timestamp_to_local_datetime(unix_timestamp: int) -> str:
@@ -20,6 +21,7 @@ def convert_unix_timestamp_to_UTC_datetime(unix_timestamp: int) -> str:
 
 def convert_datetime_to_timestamp(dt: str, tz_offset: int = 0) -> int:
     """"""
+    warnings.warn('This function assumes that the input datetime is in UTC until the offset is IMPLEMENTED which it isnt')
     if not isinstance(tz_offset, int):
         raise TypeError(f'`tz_offset` expected to be integer but instead found type: {type(tz_offset)}')
     prefix = '-' if tz_offset < 0 else '+'
