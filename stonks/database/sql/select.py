@@ -3,7 +3,7 @@
 """
 
 
-def sql_select_symbol_candlesticks(symbol: str):
+def get_sql_select_symbol_candlesticks(symbol: str):
     """"""
     sql = f"""
 SELECT
@@ -16,6 +16,16 @@ WHERE s.symbol='{symbol}'
     return sql
 
 
+def get_sql_select_sourceid_from_source(source: str) -> str:
+    """"""
+    sql = f"""
+SELECT
+    id
+FROM source
+WHERE name='{source}'""".strip()
+    return sql
+
+
 if __name__ == '__main__':
-    print(sql_select_symbol_candlesticks('AAPL'))
+    print(get_sql_select_symbol_candlesticks('AAPL'))
     pass
