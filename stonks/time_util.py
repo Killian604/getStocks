@@ -18,13 +18,16 @@ def convert_unix_timestamp_to_UTC_datetime(unix_timestamp: int) -> str:
     return utc_datetime
 
 
-def convert_datetime_to_timestamp(dt: str) -> int:
+def convert_datetime_to_timestamp(dt: str, tz_offset: int = 0) -> int:
     """"""
-    x = time.strptime(dt, "%Y-%m-%d %H:%M:%S")
-    y = int(time.mktime(x))
-    # datetime.datetime(dt)
+    if not isinstance(tz_offset, int):
+        raise TypeError(f'`tz_offset` expected to be integer but instead found type: {type(tz_offset)}')
+    prefix = '-' if tz_offset < 0 else '+'
 
-    return y
+    time_struct_obj = time.strptime(dt, "%Y-%m-%d %H:%M:%S")
+    unix_time = int(time.mktime(time_struct_obj))
+
+    return unix_time
 
 
 def get_UNIX_timestamp_now() -> int:
